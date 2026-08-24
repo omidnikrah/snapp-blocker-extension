@@ -1,0 +1,145 @@
+.sb-surface {
+  direction: rtl;
+  text-align: start;
+  color: rgba(19, 20, 31, 0.9);
+  font-family: iranSansX, IRANSansXV, 'iranSansX Fallback', Vazirmatn, Tahoma, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.sb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(19, 20, 31, 0.45);
+  animation: sb-fade-in 0.15s ease;
+}
+
+.sb-dialog {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: rgba(19, 20, 31, 0.18) 0 12px 40px;
+}
+
+.sb-dialog__title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sb-dialog__subtitle {
+  margin: 0 0 16px;
+  color: rgba(19, 20, 31, 0.6);
+}
+
+.sb-dialog__label {
+  display: block;
+  margin-block-end: 8px;
+  font-weight: 600;
+}
+
+.sb-dialog__actions {
+  display: flex;
+  gap: 10px;
+  margin-block-start: 20px;
+}
+
+.sb-dialog__actions > * {
+  flex: 1;
+}
+
+.sb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  backdrop-filter: blur(16px) saturate(1.05);
+  animation: sb-fade-in 0.2s ease;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .sb-overlay {
+    background: rgba(255, 255, 255, 0.94);
+  }
+}
+
+.sb-overlay__card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 340px;
+  padding: 28px 24px 24px;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow:
+    rgba(19, 20, 31, 0.12) 0 0 0 1px,
+    rgba(19, 20, 31, 0.08) 0 8px 32px;
+  text-align: center;
+}
+
+.sb-overlay__icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  color: rgba(19, 20, 31, 0.35);
+}
+
+.sb-overlay__title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+}
+
+.sb-overlay__shop-name {
+  margin: 0;
+  color: rgba(19, 20, 31, 0.6);
+}
+
+.sb-overlay__reason {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  border-radius: 0.5rem;
+  background: rgba(19, 20, 31, 0.04);
+  text-align: start;
+  overflow-wrap: break-word;
+}
+
+.sb-overlay__date {
+  margin: 12px 0 0;
+  font-size: 0.75rem;
+  color: rgba(19, 20, 31, 0.6);
+}
+
+.sb-overlay__actions {
+  display: flex;
+  gap: 8px;
+  margin-block-start: 20px;
+}
+
+.sb-overlay__actions > * {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes sb-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

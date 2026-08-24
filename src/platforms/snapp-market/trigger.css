@@ -1,0 +1,38 @@
+.sb-express-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.06);
+  background-image: none;
+  color: rgba(0, 0, 0, 0.88);
+  font-family: IRANSansXV, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5714285714285714;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: none;
+}
+
+.sb-express-trigger:hover {
+  color: rgba(0, 0, 0, 0.88);
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.sb-express-trigger:active {
+  color: rgba(0, 0, 0, 0.88);
+  background-color: rgba(0, 0, 0, 0.22);
+}
+
+.sb-express-trigger:focus-visible {
+  outline: 4px solid #ffc499;
+  outline-offset: 1px;
+}

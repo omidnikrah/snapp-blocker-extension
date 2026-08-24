@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light" />
+    <title>SnappBlocker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap"
+    />
+  </head>
+  <body>
+    <main class="popup">
+      <nav class="tabs">
+        <div id="tab-list" class="tabs__list" role="tablist"></div>
+        <span id="tab-indicator" class="tabs__indicator"></span>
+      </nav>
+
+      <input
+        id="search-input"
+        class="popup__search"
+        type="search"
+        placeholder="جست‌وجو در فروشگاه‌های مسدود"
+      />
+
+      <p id="empty-state" class="popup__empty" hidden></p>
+
+      <ul id="shop-list" class="popup__list"></ul>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "snapp-blocker",
+  "version": "0.1.0",
+  "description": "Block shops on Snappfood and Snapp Market and never see them again.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.10",
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@types/chrome": "^0.1.20",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.2"
+  }
+}
