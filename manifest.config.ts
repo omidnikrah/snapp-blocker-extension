@@ -19,11 +19,6 @@ export default defineManifest({
     },
   },
 
-  background: {
-    service_worker: 'src/background/service-worker.ts',
-    type: 'module',
-  },
-
   content_scripts: [
     {
       matches: ['https://snappfood.ir/*', 'https://snapp.market/*'],
