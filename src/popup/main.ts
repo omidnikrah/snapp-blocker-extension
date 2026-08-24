@@ -1,6 +1,7 @@
 import type { BlockedShop, Platform } from '@/domain/blocked-shop'
 import type { BlockedShopsRepository } from '@/domain/blocked-shops-repository'
 import { ChromeBlockedShopsRepository } from '@/domain/blocked-shops-repository'
+import storefrontMarkup from '@/icons/storefront.svg?raw'
 import { PLATFORMS, platformLabel } from '@/platforms'
 import { el } from '@/shared/dom'
 import { formatDate } from '@/shared/format-date'
@@ -16,6 +17,7 @@ class Popup {
     indicator: getRequiredElement('#tab-indicator'),
     search: getRequiredElement('#search-input') as HTMLInputElement,
     empty: getRequiredElement('#empty-state'),
+    emptyText: getRequiredElement('#empty-state-text'),
     list: getRequiredElement('#shop-list') as HTMLUListElement,
   }
 
@@ -26,6 +28,7 @@ class Popup {
 
   async start(): Promise<void> {
     this.buildTabs()
+    this.dom.empty.prepend(createStorefrontIcon('popup__empty-icon'))
     this.dom.search.addEventListener('input', this.render)
     window.addEventListener('resize', this.positionIndicator)
     this.repository.onChange((shops) => {
@@ -76,9 +79,9 @@ class Popup {
     const shops = this.on(this.active)
     const visible = query ? shops.filter((shop) => shop.name.toLowerCase().includes(query)) : shops
 
-    this.dom.empty.textContent = query
-      ? 'فروشگاهی با این نام پیدا نشد'
-      : `هنوز فروشگاهی در ${platformLabel(this.active)} مسدود نشده`
+    this.dom.emptyText.textContent = query
+      ? 'فروشگاهی به این اسم بلاک نکردی!'
+      : `به نظر هنوز تو ${platformLabel(this.active)} دستت رو آلوده نکردی!`
     this.dom.empty.hidden = visible.length > 0
     this.dom.list.hidden = visible.length === 0
     this.dom.list.replaceChildren(...visible.map((shop) => this.createRow(shop)))
@@ -148,6 +151,12 @@ function createInitialAvatar(name: string): HTMLElement {
     class: 'shop-row__image shop-row__initials',
     text: first?.segment ?? '—',
   })
+}
+
+function createStorefrontIcon(className: string): SVGElement {
+  const svg = new DOMParser().parseFromString(storefrontMarkup, 'image/svg+xml').documentElement
+  svg.setAttribute('class', className)
+  return svg as unknown as SVGElement
 }
 
 function getRequiredElement(selector: string): HTMLElement {
