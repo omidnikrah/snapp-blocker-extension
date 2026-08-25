@@ -17,3 +17,9 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   element.append(...children)
   return element
 }
+
+export function createSvgIcon(markup: string, className: string): SVGElement {
+  const svg = new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement
+  svg.setAttribute('class', className)
+  return svg as unknown as SVGElement
+}

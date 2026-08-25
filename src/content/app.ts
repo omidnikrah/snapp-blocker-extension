@@ -1,10 +1,12 @@
+import type { BlockedShop } from '@/domain/blocked-shop'
 import { makeBlockedShopId } from '@/domain/blocked-shop'
 import type { BlockedShopsRepository } from '@/domain/blocked-shops-repository'
-import { resolvePlatform } from '@/platforms/registry'
+import { resolvePlatform, resolveSite } from '@/platforms/registry'
 import type { PlatformModule } from '@/platforms/types'
 import { isContextInvalidated, isExtensionAlive } from '@/shared/extension-context'
 import { navigateBack } from '@/shared/history'
 import { onLocationChange } from '@/shared/spa-navigation'
+import { ListingBadges } from './listing-badges'
 import { TriggerPlacement } from './trigger-placement'
 import { createBlockDialog } from './ui/block-dialog'
 import { createBlockedOverlay } from './ui/blocked-overlay'
@@ -18,6 +20,7 @@ interface Ui {
 export class ContentApp {
   private ui: Ui | null = null
   private trigger: TriggerPlacement | null = null
+  private listingBadges: ListingBadges | null = null
   private subscriptions: (() => void)[] = []
 
   constructor(private readonly repository: BlockedShopsRepository) {}
@@ -25,14 +28,33 @@ export class ContentApp {
   start(): void {
     this.evaluate()
     this.subscriptions = [onLocationChange(this.evaluate), this.repository.onChange(this.evaluate)]
+    this.startListingBadges()
   }
 
   readonly stop = (): void => {
     this.disposeTrigger()
+    this.listingBadges?.dispose()
+    this.listingBadges = null
     for (const unsubscribe of this.subscriptions) unsubscribe()
     this.subscriptions = []
     unmountExtensionUi()
     this.ui = null
+  }
+
+  private startListingBadges(): void {
+    const platform = resolveSite(new URL(location.href))
+    if (!platform?.theme.createBlockedCardBadge) return
+
+    const badges = new ListingBadges(platform.adapter, platform.theme)
+    this.listingBadges = badges
+
+    const sync = (shops: BlockedShop[]): void => {
+      const ids = shops.filter((shop) => shop.platform === platform.id).map((shop) => shop.vendorId)
+      badges.setBlockedIds(new Set(ids))
+    }
+
+    this.guard(this.repository.getAll().then(sync))
+    this.subscriptions.push(this.repository.onChange(sync))
   }
 
   private readonly evaluate = (): void => {

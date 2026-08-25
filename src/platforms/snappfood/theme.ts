@@ -1,7 +1,10 @@
-import { el } from '@/shared/dom'
+import blockIconMarkup from '@/icons/block-icon.svg?raw'
+import { createSvgIcon, el } from '@/shared/dom'
 import type { ButtonRole, PlatformTheme, ReasonField } from '../types'
 import { FLOATING_BAR_MODIFIER, isInAppBar } from './anchors'
 import styles from './theme.css?inline'
+
+const BLOCKED_BADGE_LABEL = 'مسدود شده'
 
 const ROWS = 3
 const REPLICATED_VALUE = 'data-replicated-value'
@@ -18,6 +21,7 @@ export const snappfoodTheme: PlatformTheme = {
   dialogClass: null,
   styles,
   triggerStyles: styles,
+  listingBadgeStyles: styles,
 
   createButton(label, role, onClick) {
     return button(label, VARIANTS[role], onClick)
@@ -42,6 +46,13 @@ export const snappfoodTheme: PlatformTheme = {
 
   createReasonField(placeholder) {
     return createField(placeholder)
+  },
+
+  createBlockedCardBadge() {
+    return el('span', { class: 'sb-sf-listing-badge' }, [
+      createSvgIcon(blockIconMarkup, 'sb-sf-listing-badge__icon'),
+      el('span', { class: 'sb-sf-listing-badge__text', text: BLOCKED_BADGE_LABEL }),
+    ])
   },
 }
 
