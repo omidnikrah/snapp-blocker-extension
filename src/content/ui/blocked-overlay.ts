@@ -1,8 +1,8 @@
 import type { BlockedShop } from '@/domain/blocked-shop'
+import markup from '@/icons/block-icon.svg?raw'
 import type { PlatformTheme } from '@/platforms/types'
 import { el } from '@/shared/dom'
 import { formatDate } from '@/shared/format-date'
-import markup from '@/icons/block-icon.svg?raw'
 
 function createBlockIcon(className: string): SVGElement {
   const svg = new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement
