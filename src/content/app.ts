@@ -49,8 +49,17 @@ export class ContentApp {
     this.listingBadges = badges
 
     const sync = (shops: BlockedShop[]): void => {
-      const ids = shops.filter((shop) => shop.platform === platform.id).map((shop) => shop.vendorId)
-      badges.setBlockedIds(new Set(ids))
+      const codes = new Set<string>()
+      const ids = new Set<string>()
+
+      for (const shop of shops) {
+        if (shop.platform !== platform.id) continue
+
+        codes.add(shop.vendorCode)
+        if (shop.vendorId) ids.add(shop.vendorId)
+      }
+
+      badges.setBlocked({ codes, ids })
     }
 
     this.guard(this.repository.getAll().then(sync))
@@ -70,10 +79,10 @@ export class ContentApp {
     this.ui?.overlayHost.replaceChildren()
 
     const platform = resolvePlatform(url)
-    const vendorId = platform?.adapter.extractVendorId(url) ?? null
-    if (!platform || !vendorId) return
+    const vendorCode = platform?.adapter.extractVendorCode(url) ?? null
+    if (!platform || !vendorCode) return
 
-    const id = makeBlockedShopId(platform.id, vendorId)
+    const id = makeBlockedShopId(platform.id, vendorCode)
     const blocked = await this.repository.get(id)
     const { triggerLayer, overlayHost } = this.ensureUi(platform)
 
@@ -92,7 +101,7 @@ export class ContentApp {
     }
 
     this.trigger = new TriggerPlacement(platform.adapter, platform.theme, triggerLayer, () => {
-      overlayHost.replaceChildren(this.buildDialog(platform, url, id, vendorId, overlayHost))
+      overlayHost.replaceChildren(this.buildDialog(platform, url, id, vendorCode, overlayHost))
     })
   }
 
@@ -100,7 +109,7 @@ export class ContentApp {
     platform: PlatformModule,
     url: URL,
     id: string,
-    vendorId: string,
+    vendorCode: string,
     host: HTMLElement,
   ): HTMLElement {
     const shopName = platform.adapter.extractShopName(document, url)
@@ -116,7 +125,8 @@ export class ContentApp {
           this.repository.save({
             id,
             platform: platform.id,
-            vendorId,
+            vendorCode,
+            vendorId: platform.adapter.extractVendorId?.(document) ?? null,
             name: shopName,
             url: url.toString(),
             imageUrl: platform.adapter.extractShopImage?.(document) ?? null,

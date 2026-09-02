@@ -1,24 +1,41 @@
 import type { PlatformAdapter, PlatformTheme, VendorCardTarget } from '@/platforms/types'
 import { onDocumentMutation } from '@/shared/dom-mutations'
-import { mountInlineRoot } from './ui/shadow-root'
+import {
+  INJECTED_ATTRIBUTE,
+  isOverlayShowing,
+  mountInlineRoot,
+  mountListingStyles,
+} from './ui/shadow-root'
 
-const BLOCKED_FILTER = 'grayscale(1) opacity(0.5)'
+const BLOCKED_CLASS = 'snapp-blocker-blocked'
+const RELATIVE_CLASS = 'snapp-blocker-relative'
+const BADGE_HOST_STYLE = 'position:absolute;top:0.5rem;inset-inline-end:0.5rem;pointer-events:none'
 
-interface FilteredElement {
-  readonly element: HTMLElement
-  readonly previousFilter: string
+const LISTING_STYLES = `
+.${BLOCKED_CLASS} > *:not([${INJECTED_ATTRIBUTE}]) {
+  filter: grayscale(1) opacity(0.5) !important;
+}
+
+.${RELATIVE_CLASS} {
+  position: relative !important;
+}
+`
+
+export interface BlockedVendors {
+  readonly codes: ReadonlySet<string>
+  readonly ids: ReadonlySet<string>
 }
 
 interface Mount {
   readonly card: Element
   readonly host: HTMLElement
-  readonly filtered: readonly FilteredElement[]
+  readonly needsRelativeStyle: boolean
 }
 
 export class ListingBadges {
   private readonly stopWatchingMutations: () => void
   private scheduledFrame = 0
-  private blockedIds: ReadonlySet<string> = new Set()
+  private blocked: BlockedVendors = { codes: new Set(), ids: new Set() }
   private mounts: Mount[] = []
 
   constructor(
@@ -28,16 +45,15 @@ export class ListingBadges {
     this.stopWatchingMutations = onDocumentMutation(this.schedule)
   }
 
-  setBlockedIds(ids: ReadonlySet<string>): void {
-    this.blockedIds = ids
+  setBlocked(blocked: BlockedVendors): void {
+    this.blocked = blocked
     this.reconcile()
   }
 
   dispose(): void {
     this.stopWatchingMutations()
     if (this.scheduledFrame) cancelAnimationFrame(this.scheduledFrame)
-    for (const mount of this.mounts) this.unmount(mount)
-    this.mounts = []
+    this.unmountAll()
   }
 
   private readonly schedule = (): void => {
@@ -51,16 +67,23 @@ export class ListingBadges {
     const createBadge = this.theme.createBlockedCardBadge
     if (!createBadge) return
 
-    const blockedCards = (this.adapter.findVendorCards?.(document) ?? []).filter((card) =>
-      this.blockedIds.has(card.vendorId),
-    )
+    if (isOverlayShowing()) {
+      this.unmountAll()
+      return
+    }
+
+    const blockedCards = (this.adapter.findVendorCards?.(document) ?? []).filter(this.isBlocked)
 
     this.mounts = this.mounts.filter((mount) => {
       const stillBlocked =
         mount.host.isConnected && blockedCards.some((card) => card.element === mount.card)
-      if (stillBlocked) return true
-      this.unmount(mount)
-      return false
+      if (!stillBlocked) {
+        this.unmount(mount)
+        return false
+      }
+
+      markCard(mount)
+      return true
     })
 
     for (const card of blockedCards) {
@@ -69,76 +92,47 @@ export class ListingBadges {
     }
   }
 
-  private render(card: VendorCardTarget, createBadge: () => HTMLElement): Mount {
-    return card.titleElement
-      ? this.renderBesideTitle(card, card.titleElement, createBadge)
-      : this.renderFallback(card, createBadge)
+  private readonly isBlocked = (card: VendorCardTarget): boolean => {
+    const { codes, ids } = this.blocked
+    return (
+      (card.vendorCode !== null && codes.has(card.vendorCode)) ||
+      (card.vendorId !== null && ids.has(card.vendorId))
+    )
   }
 
-  private renderBesideTitle(
-    card: VendorCardTarget,
-    titleElement: Element,
-    createBadge: () => HTMLElement,
-  ): Mount {
-    const titleRow = titleElement.parentElement ?? titleElement
-    const filtered = grayOutSiblingsAlongPath(titleRow, card.element)
-    grayOut(titleElement, filtered)
+  private render(card: VendorCardTarget, createBadge: () => HTMLElement): Mount {
+    mountListingStyles(LISTING_STYLES)
 
     const inline = mountInlineRoot(
-      { element: titleElement, placement: 'after' },
+      { element: card.element, placement: 'append' },
       this.theme.listingBadgeStyles ?? '',
     )
+
+    inline.host.style.cssText = BADGE_HOST_STYLE
     inline.container.append(createBadge())
 
-    return { card: card.element, host: inline.host, filtered }
+    const mount: Mount = {
+      card: card.element,
+      host: inline.host,
+      needsRelativeStyle: getComputedStyle(card.element).position === 'static',
+    }
+    markCard(mount)
+
+    return mount
   }
 
-  private renderFallback(card: VendorCardTarget, createBadge: () => HTMLElement): Mount {
-    const filtered: FilteredElement[] = []
-    grayOut(card.element, filtered)
-
-    const parent = card.element.parentElement
-    if (parent instanceof HTMLElement && !parent.style.position) parent.style.position = 'relative'
-
-    const inline = mountInlineRoot(
-      { element: card.element, placement: 'after' },
-      this.theme.listingBadgeStyles ?? '',
-    )
-    inline.host.style.cssText = 'position:absolute;inset:0;pointer-events:none'
-
-    const badge = createBadge()
-    badge.style.cssText = 'position:absolute;top:0.5rem;inset-inline-end:0.5rem'
-    inline.container.append(badge)
-
-    return { card: card.element, host: inline.host, filtered }
+  private unmountAll(): void {
+    for (const mount of this.mounts) this.unmount(mount)
+    this.mounts = []
   }
 
   private unmount(mount: Mount): void {
     mount.host.remove()
-    for (const { element, previousFilter } of mount.filtered) {
-      element.style.filter = previousFilter
-    }
+    mount.card.classList.remove(BLOCKED_CLASS, RELATIVE_CLASS)
   }
 }
 
-/** Applies the blocked look to one element, recording how to undo it later. */
-function grayOut(element: Element, filtered: FilteredElement[]): void {
-  if (!(element instanceof HTMLElement)) return
-  const previousFilter = element.style.filter
-  filtered.push({ element, previousFilter })
-  element.style.filter = `${previousFilter} ${BLOCKED_FILTER}`.trim()
-}
-
-function grayOutSiblingsAlongPath(node: Element, root: Element): FilteredElement[] {
-  const filtered: FilteredElement[] = []
-  let current = node
-
-  while (current !== root && current.parentElement) {
-    for (const sibling of current.parentElement.children) {
-      if (sibling !== current) grayOut(sibling, filtered)
-    }
-    current = current.parentElement
-  }
-
-  return filtered
+function markCard(mount: Mount): void {
+  mount.card.classList.add(BLOCKED_CLASS)
+  if (mount.needsRelativeStyle) mount.card.classList.add(RELATIVE_CLASS)
 }

@@ -9,16 +9,17 @@ export interface AnchorTarget {
 
 export interface VendorCardTarget {
   readonly element: Element
-  readonly vendorId: string
-  readonly titleElement: Element | null
+  readonly vendorCode: string | null
+  readonly vendorId: string | null
 }
 
 export interface PlatformAdapter {
   matchesHost(url: URL): boolean
   matchesUrl(url: URL): boolean
-  extractVendorId(url: URL): string | null
+  extractVendorCode(url: URL): string | null
   extractShopName(document: Document, url: URL): string
   extractShopImage?(document: Document): string | null
+  extractVendorId?(document: Document): string | null
   findAnchors?(document: Document): AnchorTarget[]
   findVendorCards?(document: Document): VendorCardTarget[]
 }

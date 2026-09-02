@@ -1,7 +1,7 @@
 import { slugSegmentToName } from '@/shared/shop-name'
 import type { PlatformAdapter, VendorCardTarget } from '../types'
 
-const VENDOR_ID_PATTERN = /^[a-zA-Z0-9]+$/
+const VENDOR_CODE_PATTERN = /^[a-zA-Z0-9]+$/
 const LOGO_SELECTOR = 'img[src*="/vendor_logo/"]'
 const LOGO_ALT_SUFFIX = /\s*icon\s*$/i
 const SEARCH_PREFIX = 'جستجو در '
@@ -26,9 +26,9 @@ export const snappMarketAdapter: PlatformAdapter = {
     return url.hostname === HOSTNAME && url.pathname.startsWith('/supermarket/')
   },
 
-  extractVendorId(url) {
-    const vendorId = url.pathname.split('/').filter(Boolean)[2]
-    return vendorId !== undefined && VENDOR_ID_PATTERN.test(vendorId) ? vendorId : null
+  extractVendorCode(url) {
+    const vendorCode = url.pathname.split('/').filter(Boolean)[2]
+    return vendorCode !== undefined && VENDOR_CODE_PATTERN.test(vendorCode) ? vendorCode : null
   },
 
   extractShopName(document, url) {
@@ -53,8 +53,8 @@ export const snappMarketAdapter: PlatformAdapter = {
     for (const selector of VENDOR_CARD_SELECTORS) {
       const cards: VendorCardTarget[] = []
       for (const element of document.querySelectorAll(selector)) {
-        const vendorId = vendorIdFromHref(element)
-        if (vendorId) cards.push({ element, vendorId, titleElement: findCardTitle(element) })
+        const vendorCode = vendorCodeFromHref(element)
+        if (vendorCode) cards.push({ element, vendorCode, vendorId: null })
       }
       if (cards.length > 0) return cards
     }
@@ -62,31 +62,15 @@ export const snappMarketAdapter: PlatformAdapter = {
   },
 }
 
-function vendorIdFromHref(element: Element): string | null {
+function vendorCodeFromHref(element: Element): string | null {
   const href = element.getAttribute('href')
   if (!href) return null
 
   try {
-    return snappMarketAdapter.extractVendorId(new URL(href, location.href))
+    return snappMarketAdapter.extractVendorCode(new URL(href, location.href))
   } catch {
     return null
   }
-}
-
-function findCardTitle(card: Element): Element | null {
-  let name: string | null = null
-  for (const logo of card.querySelectorAll<HTMLImageElement>('img[alt]')) {
-    if (LOGO_ALT_SUFFIX.test(logo.alt)) {
-      name = blankToNull(logo.alt.replace(LOGO_ALT_SUFFIX, ''))
-      break
-    }
-  }
-  if (!name) return null
-
-  for (const element of card.querySelectorAll('*')) {
-    if (element.children.length === 0 && element.textContent?.trim() === name) return element
-  }
-  return null
 }
 
 function readLogoAlt(document: Document): string | null {

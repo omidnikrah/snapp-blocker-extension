@@ -6,7 +6,8 @@ import shadowStyles from './style.css?inline'
 const FLOATING_HOST_ID = 'snapp-blocker-root'
 const OVERLAY_HOST_ID = 'snapp-blocker-overlay'
 const OVERLAY_STYLE_ID = 'snapp-blocker-overlay-styles'
-const INJECTED_ATTRIBUTE = 'data-snapp-blocker-inline'
+const LISTING_STYLE_ID = 'snapp-blocker-listing-styles'
+export const INJECTED_ATTRIBUTE = 'data-snapp-blocker-inline'
 
 export function mountFloatingRoot(): { triggerLayer: HTMLDivElement } {
   const host = el('div', { id: FLOATING_HOST_ID })
@@ -28,8 +29,17 @@ export function mountOverlayHost(themeStyles: string): HTMLDivElement {
   return host
 }
 
+export function isOverlayShowing(): boolean {
+  return (document.getElementById(OVERLAY_HOST_ID)?.childElementCount ?? 0) > 0
+}
+
+export function mountListingStyles(styles: string): void {
+  if (document.getElementById(LISTING_STYLE_ID)) return
+  document.head.append(el('style', { id: LISTING_STYLE_ID, text: styles }))
+}
+
 export function unmountExtensionUi(): void {
-  for (const id of [FLOATING_HOST_ID, OVERLAY_HOST_ID, OVERLAY_STYLE_ID]) {
+  for (const id of [FLOATING_HOST_ID, OVERLAY_HOST_ID, OVERLAY_STYLE_ID, LISTING_STYLE_ID]) {
     document.getElementById(id)?.remove()
   }
   for (const node of document.querySelectorAll(`[${INJECTED_ATTRIBUTE}]`)) node.remove()
