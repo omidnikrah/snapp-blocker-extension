@@ -1,5 +1,7 @@
 # Snapp Blocker Extension
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/iplichahfocdfdpabmcdomdlangoepnp?label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/iplichahfocdfdpabmcdomdlangoepnp)
+
 Block shops on Snappfood and Snapp Market and never see them again.
 
 Bad experience with a shop? Block it from its page, optionally with a reason. It stays greyed out everywhere it shows up afterwards, so you don't order from it again by accident six months later.
@@ -13,7 +15,9 @@ Bad experience with a shop? Block it from its page, optionally with a reason. It
 
 ## Install
 
-Grab the zip from [Releases](https://github.com/omidnikrah/snapp-blocker-extension/releases/latest), unzip it, then load it at `chrome://extensions` with "Load unpacked".
+Install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/iplichahfocdfdpabmcdomdlangoepnp).
+
+Or install manually: grab the zip from [Releases](https://github.com/omidnikrah/snapp-blocker-extension/releases/latest), unzip it, then load it at `chrome://extensions` with "Load unpacked".
 
 ## Develop
 
